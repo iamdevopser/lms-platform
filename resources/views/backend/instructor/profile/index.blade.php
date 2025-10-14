@@ -136,11 +136,61 @@
 
                                     <div class="row mb-3">
                                         <div class="col-sm-3">
+                                            <h6 class="mb-0">Specialization</h6>
+                                        </div>
+                                        <div class="col-sm-9 text-secondary">
+                                            <input type="text" name="specialization" class="form-control"
+                                                value="{{ auth()->user()->specialization }}" placeholder="e.g. Mathematics, Science, Programming" />
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-sm-3">
+                                            <h6 class="mb-0">Education</h6>
+                                        </div>
+                                        <div class="col-sm-9 text-secondary">
+                                            <input type="text" name="education" class="form-control"
+                                                value="{{ auth()->user()->education }}" placeholder="e.g. BSc in Physics, Harvard University, 2015" />
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-sm-3">
+                                            <h6 class="mb-0">LinkedIn</h6>
+                                        </div>
+                                        <div class="col-sm-9 text-secondary">
+                                            <input type="url" name="linkedin" class="form-control"
+                                                value="{{ auth()->user()->linkedin }}" placeholder="https://linkedin.com/in/yourprofile" />
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-sm-3">
+                                            <h6 class="mb-0">Twitter</h6>
+                                        </div>
+                                        <div class="col-sm-9 text-secondary">
+                                            <input type="url" name="twitter" class="form-control"
+                                                value="{{ auth()->user()->twitter }}" placeholder="https://twitter.com/yourprofile" />
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-sm-3">
+                                            <h6 class="mb-0">Website</h6>
+                                        </div>
+                                        <div class="col-sm-9 text-secondary">
+                                            <input type="url" name="website" class="form-control"
+                                                value="{{ auth()->user()->website }}" placeholder="https://yourwebsite.com" />
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-sm-3">
                                             <h6 class="mb-0">Profile Image</h6>
                                         </div>
                                         <div class="col-sm-9 text-secondary">
-                                            <input type="file" name="photo" class="form-control" id="Photo" />
-
+                                            <input type="file" name="photo" class="form-control" id="Photo" onchange="previewPhoto(event)" />
+                                            <img id="photoPreview" src="{{ auth()->user()->photo ? asset(auth()->user()->photo) : asset('backend/assets/images/avatars/avatar-2.png') }}" alt="Profile Preview" class="rounded mt-2" width="120" />
                                         </div>
                                     </div>
 
@@ -167,5 +217,14 @@
             </div>
         </div>
     </div>
+
+    <script>
+    function previewPhoto(event) {
+        const [file] = event.target.files;
+        if (file) {
+            document.getElementById('photoPreview').src = URL.createObjectURL(file);
+        }
+    }
+    </script>
 
 @endsection

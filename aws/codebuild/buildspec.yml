@@ -1,0 +1,75 @@
+version: 0.2
+
+# Free Tier optimized buildspec for AWS CodeBuild
+phases:
+  pre_build:
+    commands:
+      # Install dependencies
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      
+      # Set environment variables
+      - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+      - export IMAGE_TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      
+      # Install PHP and Node.js
+      - echo Installing PHP and Node.js...
+      - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+      - curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+      - apt-get install -y nodejs
+
+  build:
+    commands:
+      # Install PHP dependencies
+      - echo Installing PHP dependencies...
+      - composer install --no-dev --optimize-autoloader --no-interaction
+      
+      # Install Node.js dependencies
+      - echo Installing Node.js dependencies...
+      - npm ci --only=production --no-audit --no-fund
+      
+      # Build frontend assets
+      - echo Building frontend assets...
+      - npm run build
+      
+      # Run tests
+      - echo Running tests...
+      - php artisan test --coverage --min=80
+      
+      # Build Docker image
+      - echo Building Docker image...
+      - docker build -f Dockerfile.free-tier -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $REPOSITORY_URI:latest
+
+  post_build:
+    commands:
+      # Push Docker image to ECR
+      - echo Pushing Docker image to ECR...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:latest
+      
+      # Update ECS task definition
+      - echo Updating ECS task definition...
+      - aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION --query taskDefinition > task-definition.json
+      - jq --arg IMAGE "$REPOSITORY_URI:$IMAGE_TAG" '.containerDefinitions[0].image = $IMAGE' task-definition.json > updated-task-definition.json
+      - aws ecs register-task-definition --cli-input-json file://updated-task-definition.json
+      
+      # Update ECS service
+      - echo Updating ECS service...
+      - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
+
+artifacts:
+  files:
+    - '**/*'
+  name: lms-platform-$(date +%Y-%m-%d)
+
+cache:
+  paths:
+    - '/root/.composer/cache/**/*'
+    - 'node_modules/**/*'
+
+
+
+
+

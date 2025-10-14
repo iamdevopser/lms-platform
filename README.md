@@ -1,3 +1,63 @@
+# OnliNote
+
+Bu proje, online kurs yönetimi ve satışına olanak tanıyan kapsamlı bir Learning Management System (LMS) platformudur. Kullanıcılar kurslara kaydolabilir, eğitmenler kurs oluşturabilir, adminler sistemi yönetebilir.
+
+## Özellikler
+- Kullanıcı, eğitmen ve admin panelleri
+- Kurs, kategori, sepet, ödeme, kupon yönetimi
+- Yorum, değerlendirme, slider, bilgi kutuları
+- SQL Server desteği
+- Modern ve modüler yapı
+
+## Kurulum
+```bash
+# Bağımlılıkları yükle
+composer install
+npm install
+
+# .env dosyasını oluştur ve ayarları yap
+cp .env.example .env
+
+# Uygulama anahtarı oluştur
+php artisan key:generate
+
+# Migration ve seed işlemleri
+php artisan migrate
+php artisan db:seed
+
+# Frontend derlemesi
+npm run dev
+
+# Uygulamayı başlat
+php artisan serve
+```
+
+## Gereksinimler
+- PHP >= 8.1
+- Composer
+- Node.js & npm
+- SQL Server (veya alternatif veritabanı)
+- ODBC Driver (SQL Server için)
+- Gerekli PHP eklentileri: pdo, pdo_sqlsrv, mbstring, vs.
+
+## Yapı
+- `app/Http/Controllers/` - Controller'lar
+- `app/Models/` - Modeller
+- `resources/views/` - Blade şablonları
+- `database/migrations/` - Migration dosyaları
+- `public/` - Statik dosyalar
+
+## Katkı ve Lisans
+- Katkı sağlamak için PR gönderebilirsiniz.
+- MIT Lisansı
+
+---
+
+### Ekstra
+- Projenin canlı demosu veya ekran görüntüleri eklenebilir.
+- Kullanıcı rolleri ve örnek giriş bilgileri eklenebilir (test için).
+- API veya ek modüller varsa kısaca bahsedilebilir.
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

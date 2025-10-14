@@ -5,7 +5,7 @@
 
     @include('backend.section.link')
 
-    <title>LMS - Instructor Login Credential</title>
+    <title>OnliNote - Instructor Login Credential</title>
 </head>
 
 <body class="">
@@ -32,7 +32,7 @@
                             <div class="card-body p-sm-5">
                                 <div class="">
                                     <div class="mb-3 text-center">
-                                        <img src="{{asset('backend/assets/images/logo-icon.png')}}" width="60" alt="">
+                                        <img src="{{asset('frontend/images/onlynote-logo.png')}}" width="60" alt="OnlyNote Logo">
                                     </div>
                                     <div class="text-center mb-4">
                                         <h5 class="">Instructor</h5>

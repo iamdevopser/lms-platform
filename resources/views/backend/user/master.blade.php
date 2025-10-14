@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <title>Aduca - Professional LMS</title>
+    <title>OnliNote - Professional LMS</title>
 
     <!-- Google fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -44,9 +44,9 @@
                 data-toggle="tooltip" data-placement="left" title="Close menu">
                 <i class="la la-times"></i>
             </div><!-- end off-canvas-menu-close -->
-            <div class="logo-box px-4">
-                <a href="/" target="_blank" class="logo"><img src="{{ asset('frontend/images/logo.png') }}"
-                        alt="logo"></a>
+                            <div class="logo-box px-4">
+                    <a href="{{ route('frontend.home') }}" target="_blank" class="logo"><img src="{{ asset('frontend/images/onlynote-logo.svg') }}"
+                        alt="OnlyNote Logo" style="height: 50px; width: auto;" onerror="this.src='{{asset('frontend/images/onlynote-logo.png')}}'"></a>
             </div>
 
             @include('backend.user.section.sidebar')

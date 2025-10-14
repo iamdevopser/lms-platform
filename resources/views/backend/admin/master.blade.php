@@ -3,7 +3,7 @@
 
 <head>
     @include('backend.section.link')
-    <title>LMS - Admin Dashboard</title>
+    <title>OnliNote - Admin Dashboard</title>
 
     <style>
         /* ডিফল্ট ভাবে থিম হাইড করুন */

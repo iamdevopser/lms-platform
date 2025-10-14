@@ -1,0 +1,102 @@
+# Multi-stage build optimized for AWS Free Tier
+FROM php:8.2-fpm-alpine AS base
+
+# Install minimal system dependencies for Free Tier
+RUN apk add --no-cache \
+    nginx \
+    supervisor \
+    curl \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    git \
+    nodejs \
+    npm \
+    oniguruma-dev \
+    libxml2-dev \
+    icu-dev \
+    mysql-client
+
+# Install only essential PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo \
+        pdo_mysql \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath \
+        gd \
+        zip \
+        intl \
+        xml \
+        soap \
+        opcache
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy composer files
+COPY composer.json composer.lock ./
+
+# Install PHP dependencies (production only, no dev dependencies)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --no-plugins
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install Node dependencies (production only)
+RUN npm ci --only=production --no-audit --no-fund --silent
+
+# Copy application code
+COPY . .
+
+# Build frontend assets
+RUN npm run build
+
+# Free Tier optimizations
+RUN echo "upload_max_filesize = 10M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size = 10M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "memory_limit = 128M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "max_execution_time = 30" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "max_input_time = 30" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "max_file_uploads = 5" >> /usr/local/etc/php/conf.d/uploads.ini
+
+# Optimize OPcache for Free Tier
+RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.memory_consumption=64" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.interned_strings_buffer=8" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.max_accelerated_files=2000" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.revalidate_freq=2" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.fast_shutdown=1" >> /usr/local/etc/php/conf.d/opcache.ini
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage \
+    && chmod -R 755 /var/www/html/bootstrap/cache
+
+# Copy Free Tier optimized configurations
+COPY docker/free-tier/nginx.conf /etc/nginx/http.d/default.conf
+COPY docker/free-tier/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/free-tier/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+
+# Health check optimized for Free Tier
+HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=2 \
+    CMD curl -f http://localhost/health || exit 1
+
+# Expose port
+EXPOSE 80
+
+# Start supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+
+
+
+
+

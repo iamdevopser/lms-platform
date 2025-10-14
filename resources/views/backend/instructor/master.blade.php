@@ -3,7 +3,7 @@
 
 <head>
     @include('backend.section.link')
-    <title>LMS - Instructor Dashboard</title>
+    <title>OnliNote - Instructor Dashboard</title>
 </head>
 
 <body>

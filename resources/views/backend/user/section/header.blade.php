@@ -5,8 +5,8 @@
                 <div class="row align-items-center">
                     <div class="col-lg-12">
                         <div class="logo-box logo--box">
-                            <a href="index.html" class="logo">
-                                <img src="{{asset('frontend/images/logo.png')}}" alt="logo">
+                            <a href="{{ route('frontend.home') }}" class="logo">
+                                <img src="{{asset('frontend/images/onlynote-logo.svg')}}" alt="OnlyNote Logo" style="height: 50px; width: auto;" onerror="this.src='{{asset('frontend/images/onlynote-logo.png')}}'">
 
                             </a>
                             <div class="user-btn-action">
@@ -35,7 +35,7 @@
                             <div class="nav-right-button d-flex align-items-center">
                                 <div class="user-action-wrap d-flex align-items-center">
                                     <div>
-                                        <a style="margin-right: 25px" href="/" target="_blank">Explore LMS</a>
+                                        <a style="margin-right: 25px" href="/" target="_blank">Explore OnliNote</a>
                                     </div>
                                     <div class="shop-cart course-cart pr-3 mr-3 border-right border-right-gray">
                                         <ul>
@@ -308,7 +308,7 @@
                                                             <li>
                                                                 <a href="#" class="position-relative">
                                                                     <span
-                                                                        class="fs-17 font-weight-semi-bold d-block">Aduca
+                                                                        class="fs-17 font-weight-semi-bold d-block">OnliNote
                                                                         for Business</span>
                                                                     <span
                                                                         class="lh-20 d-block fs-14 text-gray">Bring
@@ -364,9 +364,9 @@
             <li><a href="dashboard-settings.html">Edit profile</a></li>
             <li><a href="index.html">Log out</a></li>
         </ul>
-        <h4 class="off-canvas-menu-heading pt-20px">More from Aduca</h4>
+        <h4 class="off-canvas-menu-heading pt-20px">More from OnliNote</h4>
         <ul class="generic-list-item off-canvas-menu-list pt-1">
-            <li><a href="for-business.html">Aduca for Business</a></li>
+            <li><a href="for-business.html">OnliNote for Business</a></li>
             <li><a href="#">Get the app</a></li>
             <li><a href="invite.html">Invite friends</a></li>
             <li><a href="contact.html">Help</a></li>

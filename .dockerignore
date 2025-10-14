@@ -1,0 +1,81 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+README.md
+DOCKER-README.md
+*.md
+
+# Environment
+.env
+.env.*
+!.env.example
+!docker.env.example
+
+# Dependencies
+node_modules
+vendor
+
+# Logs
+*.log
+logs
+storage/logs
+
+# Cache
+bootstrap/cache/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+tests
+phpunit.xml
+.phpunit.result.cache
+
+# Build artifacts
+public/build
+public/hot
+public/storage
+
+# Temporary files
+tmp
+temp
+
+# Backup files
+backups
+*.backup
+*.bak
+
+# Mobile specific
+mobile/node_modules
+mobile/android
+mobile/ios
+mobile/.gradle
+mobile/.expo
+
+# Development
+docker/scripts
+docker-compose.dev.yml
+
+
+
+
+

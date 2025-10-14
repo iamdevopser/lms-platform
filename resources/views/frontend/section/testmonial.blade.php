@@ -30,7 +30,7 @@
                         </div>
                     </div><!-- end media -->
                     <p class="card-text">
-                        My children and I LOVE Aduca! The courses are fantastic and the
+                        My children and I LOVE OnliNote! The courses are fantastic and the
                         instructors are so fun and knowledgeable.
                         I only wish we found it sooner.
                     </p>
@@ -58,7 +58,7 @@
                         </div>
                     </div><!-- end media -->
                     <p class="card-text">
-                        No matter what you want to learn, you’ll find an
+                        No matter what you want to learn, you'll find an
                         amazing selection of courses here.
                         The instructors are so knowledgable while
                         being fun and interesting. Lorem ipsum dolor sit amet,
@@ -88,7 +88,7 @@
                         </div>
                     </div><!-- end media -->
                     <p class="card-text">
-                        I really recommend this site to all my friends and anyone who’s willing to
+                        I really recommend this site to all my friends and anyone who's willing to
                         learn real skills. This platform gives
                         you the opportunity to learn from experts at a convenient time.
                     </p>
@@ -116,7 +116,7 @@
                         </div>
                     </div><!-- end media -->
                     <p class="card-text">
-                        Thank you Aduca! You've renewed my passion for
+                        Thank you OnliNote! You've renewed my passion for
                         learning and my dream of becoming a web developer.
                     </p>
                 </div><!-- end card-body -->
@@ -172,7 +172,7 @@
                         </div>
                     </div><!-- end media -->
                     <p class="card-text">
-                        My children and I LOVE Aduca! The courses are fantastic and the
+                        My children and I LOVE OnliNote! The courses are fantastic and the
                         instructors are so fun and knowledgeable.
                         I only wish we found it sooner.
                     </p>
@@ -200,7 +200,7 @@
                         </div>
                     </div><!-- end media -->
                     <p class="card-text">
-                        No matter what you want to learn, you’ll find an
+                        No matter what you want to learn, you'll find an
                         amazing selection of courses here.
                         The instructors are so knowledgable while
                         being fun and interesting. Lorem ipsum dolor sit amet,
@@ -230,7 +230,7 @@
                         </div>
                     </div><!-- end media -->
                     <p class="card-text">
-                        I really recommend this site to all my friends and anyone who’s willing to
+                        I really recommend this site to all my friends and anyone who's willing to
                         learn real skills. This platform gives
                         you the opportunity to learn from experts at a convenient time.
                     </p>
@@ -258,7 +258,7 @@
                         </div>
                     </div><!-- end media -->
                     <p class="card-text">
-                        Thank you Aduca! You've renewed my passion for
+                        Thank you OnliNote! You've renewed my passion for
                         learning and my dream of becoming a web developer.
                     </p>
                 </div><!-- end card-body -->

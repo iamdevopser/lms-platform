@@ -3,7 +3,7 @@
 
 <head>
 
-    <title>Aduca - Learning Management System</title>
+    <title>OnlyNote - Learning Management System</title>
 
     <!-- Google fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -11,7 +11,8 @@
         rel="stylesheet">
 
     <!-- Favicon -->
-    <link rel="icon" sizes="16x16" href="{{ asset('frontend/images/favicon.png') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('frontend/images/favicon.svg') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('frontend/images/favicon.svg') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- inject:css -->
@@ -19,6 +20,53 @@
     @include('frontend.section.link')
 
     <!-- end inject -->
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 50%, #80deea 100%);
+            min-height: 100vh;
+            box-shadow: inset 0 0 50px rgba(0, 150, 136, 0.1);
+        }
+        
+        .header-menu-area {
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .header-menu-area.scrolled {
+            background: rgba(255, 255, 255, 0.98) !important;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-menu-area.scrolled .header-menu-content {
+            background: rgba(255, 255, 255, 0.98) !important;
+        }
+        
+        .header-menu-area.scrolled .header-top {
+            background: rgba(255, 255, 255, 0.98) !important;
+        }
+        
+        .bg-light {
+            background-color: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(5px);
+        }
+        
+        .bg-white {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* Navbar'ın her zaman görünür olması için */
+        .header-menu-area {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+    </style>
 
 </head>
 
@@ -98,6 +146,19 @@
 
     <!-- template js files -->
     @include('frontend.section.script')
+    
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.header-menu-area');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+    </script>
+    @yield('scripts')
 </body>
 
 </html>

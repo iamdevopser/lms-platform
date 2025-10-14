@@ -1,10 +1,10 @@
 <div class="sidebar-wrapper" data-simplebar="true">
     <div class="sidebar-header">
         <div>
-            <img src="{{asset('backend/assets/images/logo-icon.png')}}" class="logo-icon" alt="logo icon">
+            <img src="{{asset('frontend/images/onlynote-logo.svg')}}" class="logo-icon" alt="OnlyNote Logo" style="width: 40px; height: 40px;" onerror="this.src='{{asset('frontend/images/onlynote-logo.png')}}'">
         </div>
         <div>
-            <h4 class="logo-text">Admin</h4>
+            <h4 class="logo-text">OnlyNote Admin</h4>
         </div>
         <div class="toggle-icon ms-auto"><i class='bx bx-arrow-back'></i>
         </div>
@@ -85,6 +85,26 @@
 
             </ul>
         </li>
+
+        <li class="{{ setSidebar(['admin.stripe*']) }}">
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class="bx bx-credit-card"></i>
+                </div>
+                <div class="menu-title">Stripe Yönetimi</div>
+            </a>
+            <ul>
+                <li class="{{ setSidebar(['admin.stripe.subscriptions']) }}">
+                    <a href="{{route('admin.stripe.subscriptions')}}"><i class='bx bx-radio-circle'></i>Abonelikler</a>
+                </li>
+                <li class="{{ setSidebar(['admin.stripe.payments']) }}">
+                    <a href="{{route('admin.stripe.payments')}}"><i class='bx bx-radio-circle'></i>Ödemeler</a>
+                </li>
+                <li class="{{ setSidebar(['admin.stripe.statistics']) }}">
+                    <a href="{{route('admin.stripe.statistics')}}"><i class='bx bx-radio-circle'></i>İstatistikler</a>
+                </li>
+            </ul>
+        </li>
+
 
 
 

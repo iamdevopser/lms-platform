@@ -3,12 +3,12 @@
         <div class="row">
             <div class="col-lg-3 responsive-column-half">
                 <div class="footer-item">
-                    <a href="index.html">
-                        <img src="images/logo.png" alt="footer logo" class="footer__logo">
+                    <a href="{{ route('frontend.home') }}">
+                        <img src="{{ asset('frontend/images/onlynote-logo.svg') }}" alt="OnlyNote Logo" class="footer__logo" style="height: 60px; width: auto;" onerror="this.src='{{asset('frontend/images/onlynote-logo.png')}}'">
                     </a>
                     <ul class="generic-list-item pt-4">
                         <li><a href="tel:+1631237884">+163 123 7884</a></li>
-                        <li><a href="mailto:support@wbsite.com">support@website.com</a></li>
+                        <li><a href="mailto:support@onlynote.com">support@onlynote.com</a></li>
                         <li>Melbourne, Australia, 105 South Park Avenue</li>
                     </ul>
                     <h3 class="fs-20 font-weight-semi-bold pt-4 pb-2">We are on</h3>
@@ -72,7 +72,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
-                    <p class="copy-desc">&copy; 2021 Aduca. All Rights Reserved. by <a
+                    <p class="copy-desc">&copy; 2024 OnlyNote. All Rights Reserved. by <a
                             href="https://techydevs.com/">TechyDevs</a></p>
                 </div><!-- end col-lg-6 -->
                 <div class="col-lg-6">

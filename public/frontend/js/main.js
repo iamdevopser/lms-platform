@@ -1,6 +1,6 @@
 /*---------------------------------------------
-Template name:  Aduca
-Description: Aduca - Education HTML Template
+Template name:  OnliNote
+Description: OnliNote - Education HTML Template
 Author:         TechyDevs
 Author Email:   contact@techydevs.com
 ----------------------------------------------*/

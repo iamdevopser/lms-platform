@@ -50,6 +50,21 @@
                         class="la la-shopping-cart fs-18 mr-1"></i> Add to cart</button>
                 <button type="button" class="btn theme-btn w-100 theme-btn-white mb-2"><i
                         class="la la-shopping-bag mr-1"></i> Buy this course</button>
+                
+                @auth
+                    <button type="button" class="btn btn-outline-danger w-100 wishlist-toggle-btn" 
+                            data-course-id="{{ $course->id }}"
+                            data-in-wishlist="{{ auth()->user()->hasInWishlist($course->id) ? 'true' : 'false' }}">
+                        <i class="la la-heart{{ auth()->user()->hasInWishlist($course->id) ? '' : '-o' }} mr-1"></i> 
+                        <span class="wishlist-text">
+                            {{ auth()->user()->hasInWishlist($course->id) ? 'Remove from Wishlist' : 'Add to Wishlist' }}
+                        </span>
+                    </button>
+                @else
+                    <a href="{{ route('login') }}" class="btn btn-outline-danger w-100">
+                        <i class="la la-heart-o mr-1"></i> Add to Wishlist
+                    </a>
+                @endauth
             </div>
             <p class="fs-14 text-center pb-4">30-Day Money-Back Guarantee</p>
             <div class="preview-course-incentives">
@@ -71,11 +86,11 @@
                 <div class="buy-for-team-container pt-4">
                     <h3 class="fs-18 font-weight-semi-bold pb-2">Training 5 or more people?
                     </h3>
-                    <p class="lh-24 pb-3">Get your team access to 3,000+ top Aduca courses
+                    <p class="lh-24 pb-3">Get your team access to 3,000+ top OnliNote courses
                         anytime, anywhere.</p>
                     <a href="for-business.html"
                         class="btn theme-btn theme-btn-sm theme-btn-transparent lh-30 w-100">Try
-                        Aduca for Business</a>
+                        OnliNote for Business</a>
                 </div>
             </div><!-- end preview-course-incentives -->
         </div><!-- end preview-course-content -->

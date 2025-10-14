@@ -1,10 +1,10 @@
 <div class="sidebar-wrapper" data-simplebar="true">
     <div class="sidebar-header">
         <div>
-            <img src="{{asset('backend/assets/images/logo-icon.png')}}" class="logo-icon" alt="logo icon">
+            <img src="{{asset('frontend/images/onlynote-logo.png')}}" class="logo-icon" alt="OnlyNote Logo" style="width: 40px; height: 40px;">
         </div>
         <div>
-            <h4 class="logo-text">Instructor</h4>
+            <h4 class="logo-text">OnlyNote Instructor</h4>
         </div>
         <div class="toggle-icon ms-auto"><i class='bx bx-arrow-back'></i>
         </div>

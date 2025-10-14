@@ -260,7 +260,7 @@
                                     </li>
                                 </ul>
                                 <div class="btn-box border-top border-top-gray pt-3">
-                                    <p class="fs-14 lh-22 mb-2">Aduca is required by law to collect applicable transaction
+                                    <p class="fs-14 lh-22 mb-2">OnliNote is required by law to collect applicable transaction
                                         taxes for purchases made in certain tax jurisdictions.</p>
                                     <p class="fs-14 lh-22 mb-3">By completing your purchase you agree to these <a
                                             href="#" class="text-color hover-underline">Terms of Service.</a></p>
