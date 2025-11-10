@@ -32,6 +32,11 @@ use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\StripeController;
 use App\Http\Controllers\backend\AdminStripeController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\HealthController;
+
+// Health check endpoints (no auth required)
+Route::get('/health', [HealthController::class, 'check'])->name('health.check');
+Route::get('/health/simple', [HealthController::class, 'simple'])->name('health.simple');
 
 Route::get('/dashboard', [UserController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 

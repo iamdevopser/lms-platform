@@ -1,494 +1,468 @@
-# 🚀 AWS Production Deployment Guide - LMS Platform
+# 🚀 AWS Free Tier - LMS Platform Kurulum Rehberi
 
-## 📊 Maliyet Analizi (Aylık)
+Bu rehber, OnliNote LMS platformunu AWS Free Tier kullanarak tamamen ücretsiz bir şekilde nasıl kuracağınızı adım adım anlatmaktadır.
 
-### Başlangıç Maliyeti (Minimum)
-- **EC2 t3.medium**: $30-40/ay
-- **RDS db.t3.micro**: $15-20/ay
-- **ElastiCache t3.micro**: $10-15/ay
-- **S3 + CloudFront**: $5-10/ay
-- **Route 53**: $0.50/ay
-- **ALB**: $16/ay
-- **Toplam**: ~$80-100/ay
+## 📋 İçindekiler
 
-### Ölçeklendirme Sonrası
-- **EC2 Auto Scaling**: $100-200/ay
-- **RDS Multi-AZ**: $50-100/ay
-- **ElastiCache Cluster**: $30-50/ay
-- **S3 + CloudFront**: $20-50/ay
-- **Toplam**: ~$200-400/ay
+1. [Ön Gereksinimler](#ön-gereksinimler)
+2. [AWS Free Tier Limitleri](#aws-free-tier-limitleri)
+3. [Hazırlık Adımları](#hazırlık-adımları)
+4. [AWS Kurulum Adımları](#aws-kurulum-adımları)
+5. [Uygulama Deployment](#uygulama-deployment)
+6. [Veritabanı Kurulumu](#veritabanı-kurulumu)
+7. [Test ve Doğrulama](#test-ve-doğrulama)
+8. [Maliyet Optimizasyonu](#maliyet-optimizasyonu)
+9. [Sorun Giderme](#sorun-giderme)
 
-## 🏗️ Faz 1: Temel AWS Kurulum
+## 🎯 Ön Gereksinimler
 
-### 1.1 AWS Hesap Kurulumu
+### 1. AWS Hesabı
+- Yeni bir AWS hesabı oluşturun (12 ay içinde Free Tier'e uygunsunuz)
+- AWS hesabınızda kredi kartı bilgisi olmalı (kullanılmayacak, sadece doğrulama için)
+- AWS Console'a giriş yapın: https://console.aws.amazon.com
+
+### 2. Yerel Gereksinimler
+- Git kurulu
+- Docker Desktop kurulu (Windows/Mac) veya Docker Engine (Linux)
+- AWS CLI v2 kurulu
+- Bir text editor (VS Code önerilir)
+
+### 3. AWS CLI Kurulumu
+
+#### Windows (PowerShell)
+```powershell
+# AWS CLI v2 indirme ve kurulum
+# https://aws.amazon.com/cli/ adresinden indirin
+aws --version
+```
+
+#### macOS
 ```bash
-# AWS CLI kurulumu
+brew install awscli
+aws --version
+```
+
+#### Linux
+```bash
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
+aws --version
+```
 
-# AWS konfigürasyonu
+### 4. AWS CLI Yapılandırması
+```bash
 aws configure
-# AWS Access Key ID: [your-access-key]
-# AWS Secret Access Key: [your-secret-key]
-# Default region name: us-east-1
-# Default output format: json
+```
+Şunları girin:
+- AWS Access Key ID: (IAM'den oluşturun)
+- AWS Secret Access Key: (IAM'den oluşturun)
+- Default region: `us-east-1` (Free Tier için önerilir)
+- Default output format: `json`
+
+### 5. IAM Kullanıcı ve Access Key Oluşturma
+
+1. AWS Console'da IAM servisine gidin
+2. "Users" > "Add users" tıklayın
+3. Kullanıcı adı: `lms-platform-deploy`
+4. "Programmatic access" seçin
+5. "Attach existing policies directly" seçin
+6. Şu policy'leri ekleyin:
+   - `AmazonEC2FullAccess`
+   - `AmazonRDSFullAccess`
+   - `AmazonECS_FullAccess`
+   - `AmazonElastiCacheFullAccess`
+   - `AmazonS3FullAccess`
+   - `AmazonEC2ContainerRegistryFullAccess`
+   - `CloudFormationFullAccess`
+   - `IAMFullAccess`
+   - `AmazonCloudWatchFullAccess`
+7. Access Key ID ve Secret Access Key'i kaydedin
+
+## 💰 AWS Free Tier Limitleri
+
+| Servis | Free Tier Limit | Süre |
+|--------|----------------|------|
+| **EC2 t3.micro** | 750 saat/ay | 12 ay |
+| **RDS db.t3.micro** | 750 saat/ay | 12 ay |
+| **ElastiCache cache.t3.micro** | 750 saat/ay | 12 ay |
+| **S3** | 5GB storage | 12 ay |
+| **Data Transfer** | 1GB/ay | 12 ay |
+| **CloudWatch** | 10 metrik, 1M API isteği | 12 ay |
+
+**⚠️ Önemli Notlar:**
+- Application Load Balancer (ALB) Free Tier'de yok, aylık ~$16 maliyet
+- CloudFront Free Tier'de 1TB transfer var ama kullanmayacağız
+- Free Tier limitlerini aşarsanız ücretlendirme başlar
+
+## 🛠️ Hazırlık Adımları
+
+### 1. Projeyi Klonlayın
+```bash
+git clone <your-repo-url>
+cd lms-platform
 ```
 
-### 1.2 Gerekli Servisleri Aktifleştir
-- EC2 (Elastic Compute Cloud)
-- RDS (Relational Database Service)
-- ElastiCache
-- S3 (Simple Storage Service)
-- CloudFront
-- Route 53
-- Certificate Manager
-- IAM (Identity and Access Management)
-
-## 🖥️ Faz 2: EC2 Instance Kurulumu
-
-### 2.1 EC2 Instance Oluştur
+### 2. Proje Yapısını Kontrol Edin
 ```bash
-# Key pair oluştur
-aws ec2 create-key-pair --key-name lms-platform-key --query 'KeyMaterial' --output text > lms-platform-key.pem
-chmod 400 lms-platform-key.pem
+# Dockerfile.free-tier dosyasının var olduğunu kontrol edin
+ls -la Dockerfile.free-tier
 
-# Security Group oluştur
-aws ec2 create-security-group --group-name lms-platform-sg --description "LMS Platform Security Group"
-
-# Security Group kuralları
-aws ec2 authorize-security-group-ingress --group-name lms-platform-sg --protocol tcp --port 22 --cidr 0.0.0.0/0
-aws ec2 authorize-security-group-ingress --group-name lms-platform-sg --protocol tcp --port 80 --cidr 0.0.0.0/0
-aws ec2 authorize-security-group-ingress --group-name lms-platform-sg --protocol tcp --port 443 --cidr 0.0.0.0/0
+# AWS deployment scriptlerini kontrol edin
+ls -la aws/free-tier-deploy.sh
+ls -la aws/free-tier-infrastructure.yml
 ```
 
-### 2.2 EC2 Instance Başlat
+### 3. Environment Dosyasını Hazırlayın
 ```bash
-# Ubuntu 22.04 LTS AMI ID (us-east-1)
-AMI_ID="ami-0c02fb55956c7d316"
+# docker.env.example'dan kopyalayın
+cp docker.env.example .env
 
-# Instance oluştur
-aws ec2 run-instances \
-    --image-id $AMI_ID \
-    --count 1 \
-    --instance-type t3.medium \
-    --key-name lms-platform-key \
-    --security-groups lms-platform-sg \
-    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=lms-platform-prod}]'
+# .env dosyasını düzenleyin
+nano .env
 ```
 
-## 🗄️ Faz 3: RDS MySQL Kurulumu
+Gerekli değişkenler:
+```env
+APP_NAME="OnliNote LMS"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=http://your-alb-url.us-east-1.elb.amazonaws.com
 
-### 3.1 RDS Subnet Group Oluştur
-```bash
-# VPC ID'yi al
-VPC_ID=$(aws ec2 describe-vpcs --filters "Name=is-default,Values=true" --query 'Vpcs[0].VpcId' --output text)
+DB_CONNECTION=mysql
+DB_HOST=<RDS-endpoint>
+DB_PORT=3306
+DB_DATABASE=lms_platform
+DB_USERNAME=admin
+DB_PASSWORD=<secure-password>
 
-# Subnet'leri al
-SUBNET_IDS=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" --query 'Subnets[*].SubnetId' --output text)
+REDIS_HOST=<ElastiCache-endpoint>
+REDIS_PORT=6379
 
-# RDS Subnet Group oluştur
-aws rds create-db-subnet-group \
-    --db-subnet-group-name lms-platform-subnet-group \
-    --db-subnet-group-description "LMS Platform RDS Subnet Group" \
-    --subnet-ids $SUBNET_IDS
+CACHE_DRIVER=redis
+SESSION_DRIVER=redis
+QUEUE_CONNECTION=redis
+
+STRIPE_KEY=pk_test_...
+STRIPE_SECRET=sk_test_...
 ```
 
-### 3.2 RDS MySQL Instance Oluştur
+## 🚀 AWS Kurulum Adımları
+
+### Adım 1: ECR Repository Oluşturma
+
 ```bash
-# Security Group oluştur (RDS için)
-aws ec2 create-security-group --group-name lms-rds-sg --description "LMS RDS Security Group" --vpc-id $VPC_ID
+# AWS hesap ID'sini alın
+AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+AWS_REGION="us-east-1"
+ECR_REPOSITORY="lms-platform-free"
 
-# RDS Security Group kuralları
-RDS_SG_ID=$(aws ec2 describe-security-groups --group-names lms-rds-sg --query 'SecurityGroups[0].GroupId' --output text)
-APP_SG_ID=$(aws ec2 describe-security-groups --group-names lms-platform-sg --query 'SecurityGroups[0].GroupId' --output text)
-
-aws ec2 authorize-security-group-ingress \
-    --group-id $RDS_SG_ID \
-    --protocol tcp \
-    --port 3306 \
-    --source-group $APP_SG_ID
-
-# RDS Instance oluştur
-aws rds create-db-instance \
-    --db-instance-identifier lms-platform-db \
-    --db-instance-class db.t3.micro \
-    --engine mysql \
-    --engine-version 8.0.35 \
-    --master-username admin \
-    --master-user-password 'YourSecurePassword123!' \
-    --allocated-storage 20 \
-    --storage-type gp2 \
-    --vpc-security-group-ids $RDS_SG_ID \
-    --db-subnet-group-name lms-platform-subnet-group \
-    --backup-retention-period 7 \
-    --multi-az \
-    --storage-encrypted
+# ECR repository oluşturun
+aws ecr create-repository \
+    --repository-name ${ECR_REPOSITORY} \
+    --region ${AWS_REGION} \
+    --image-scanning-configuration scanOnPush=true \
+    --image-tag-mutability MUTABLE
 ```
 
-## 🔴 Faz 4: ElastiCache Redis Kurulumu
+### Adım 2: Docker Image Build ve Push
 
-### 4.1 ElastiCache Subnet Group Oluştur
 ```bash
-# ElastiCache Subnet Group oluştur
-aws elasticache create-cache-subnet-group \
-    --cache-subnet-group-name lms-platform-cache-subnet-group \
-    --cache-subnet-group-description "LMS Platform ElastiCache Subnet Group" \
-    --subnet-ids $SUBNET_IDS
+# ECR'ye login olun
+aws ecr get-login-password --region ${AWS_REGION} | \
+    docker login --username AWS --password-stdin \
+    ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+# Docker image'ı build edin
+docker build -f Dockerfile.free-tier -t ${ECR_REPOSITORY}:latest .
+
+# Image'ı tag'leyin
+docker tag ${ECR_REPOSITORY}:latest \
+    ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:latest
+
+# Image'ı ECR'ye push edin
+docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:latest
 ```
 
-### 4.2 ElastiCache Redis Cluster Oluştur
+### Adım 3: CloudFormation Stack Oluşturma
+
 ```bash
-# Security Group oluştur (ElastiCache için)
-aws ec2 create-security-group --group-name lms-cache-sg --description "LMS ElastiCache Security Group" --vpc-id $VPC_ID
+# Güvenli bir database şifresi oluşturun
+DB_PASSWORD=$(openssl rand -base64 32)
 
-CACHE_SG_ID=$(aws ec2 describe-security-groups --group-names lms-cache-sg --query 'SecurityGroups[0].GroupId' --output text)
+# CloudFormation stack'i oluşturun
+cd aws
+aws cloudformation create-stack \
+    --stack-name lms-platform-free-infrastructure \
+    --template-body file://free-tier-infrastructure.yml \
+    --capabilities CAPABILITY_IAM \
+    --region ${AWS_REGION} \
+    --parameters \
+        ParameterKey=ProjectName,ParameterValue=lms-platform-free \
+        ParameterKey=DatabasePassword,ParameterValue=${DB_PASSWORD}
 
-aws ec2 authorize-security-group-ingress \
-    --group-id $CACHE_SG_ID \
-    --protocol tcp \
-    --port 6379 \
-    --source-group $APP_SG_ID
-
-# ElastiCache Redis Cluster oluştur
-aws elasticache create-cache-cluster \
-    --cache-cluster-id lms-platform-cache \
-    --cache-node-type cache.t3.micro \
-    --engine redis \
-    --num-cache-nodes 1 \
-    --cache-subnet-group-name lms-platform-cache-subnet-group \
-    --security-group-ids $CACHE_SG_ID \
-    --port 6379
+# Stack'in oluşturulmasını bekleyin (15-20 dakika sürebilir)
+aws cloudformation wait stack-create-complete \
+    --stack-name lms-platform-free-infrastructure \
+    --region ${AWS_REGION}
 ```
 
-## 📦 Faz 5: S3 ve CloudFront Kurulumu
+### Adım 4: Stack Output'larını Alma
 
-### 5.1 S3 Bucket Oluştur
 ```bash
-# S3 Bucket oluştur (unique name gerekli)
-BUCKET_NAME="lms-platform-assets-$(date +%s)"
-aws s3 mb s3://$BUCKET_NAME
+# Stack output'larını alın
+aws cloudformation describe-stacks \
+    --stack-name lms-platform-free-infrastructure \
+    --region ${AWS_REGION} \
+    --query 'Stacks[0].Outputs'
 
-# Bucket policy oluştur
-cat > bucket-policy.json << EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "PublicReadGetObject",
-            "Effect": "Allow",
-            "Principal": "*",
-            "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::$BUCKET_NAME/*"
-        }
-    ]
-}
-EOF
+# Önemli değerleri kaydedin
+DB_ENDPOINT=$(aws cloudformation describe-stacks \
+    --stack-name lms-platform-free-infrastructure \
+    --region ${AWS_REGION} \
+    --query 'Stacks[0].Outputs[?OutputKey==`DatabaseEndpoint`].OutputValue' \
+    --output text)
 
-aws s3api put-bucket-policy --bucket $BUCKET_NAME --policy file://bucket-policy.json
+REDIS_ENDPOINT=$(aws cloudformation describe-stacks \
+    --stack-name lms-platform-free-infrastructure \
+    --region ${AWS_REGION} \
+    --query 'Stacks[0].Outputs[?OutputKey==`RedisEndpoint`].OutputValue' \
+    --output text)
+
+ALB_URL=$(aws cloudformation describe-stacks \
+    --stack-name lms-platform-free-infrastructure \
+    --region ${AWS_REGION} \
+    --query 'Stacks[0].Outputs[?OutputKey==`LoadBalancerURL`].OutputValue' \
+    --output text)
+
+echo "Database Endpoint: ${DB_ENDPOINT}"
+echo "Redis Endpoint: ${REDIS_ENDPOINT}"
+echo "Load Balancer URL: ${ALB_URL}"
 ```
 
-### 5.2 CloudFront Distribution Oluştur
+## 🗄️ Veritabanı Kurulumu
+
+### Adım 1: RDS'e Bağlanma
+
 ```bash
-# CloudFront Distribution oluştur
-aws cloudfront create-distribution \
-    --distribution-config '{
-        "CallerReference": "lms-platform-'$(date +%s)'",
-        "Comment": "LMS Platform Assets Distribution",
-        "DefaultCacheBehavior": {
-            "TargetOriginId": "S3-'$BUCKET_NAME'",
-            "ViewerProtocolPolicy": "redirect-to-https",
-            "TrustedSigners": {
-                "Enabled": false,
-                "Quantity": 0
-            },
-            "ForwardedValues": {
-                "QueryString": false,
-                "Cookies": {"Forward": "none"}
-            },
-            "MinTTL": 0,
-            "DefaultTTL": 86400,
-            "MaxTTL": 31536000
-        },
-        "Origins": {
-            "Quantity": 1,
-            "Items": [
-                {
-                    "Id": "S3-'$BUCKET_NAME'",
-                    "DomainName": "'$BUCKET_NAME'.s3.amazonaws.com",
-                    "S3OriginConfig": {
-                        "OriginAccessIdentity": ""
-                    }
-                }
-            ]
-        },
-        "Enabled": true,
-        "PriceClass": "PriceClass_100"
+# MySQL client ile bağlanın (yerel MySQL client gerekli)
+mysql -h ${DB_ENDPOINT} -u admin -p
+
+# Veya AWS Systems Manager Session Manager kullanın
+```
+
+### Adım 2: Laravel Migration ve Seeder Çalıştırma
+
+ECS task'ı içinde migration çalıştırmak için:
+
+```bash
+# ECS task'ı oluşturun (geçici olarak)
+aws ecs run-task \
+    --cluster lms-platform-free-cluster \
+    --task-definition lms-platform-free-task \
+    --launch-type FARGATE \
+    --network-configuration "awsvpcConfiguration={subnets=[subnet-xxx],securityGroups=[sg-xxx],assignPublicIp=ENABLED}" \
+    --overrides '{
+        "containerOverrides": [{
+            "name": "lms-app",
+            "command": ["php", "artisan", "migrate", "--force"]
+        }]
+    }'
+
+# Seeder çalıştırın
+aws ecs run-task \
+    --cluster lms-platform-free-cluster \
+    --task-definition lms-platform-free-task \
+    --launch-type FARGATE \
+    --network-configuration "awsvpcConfiguration={subnets=[subnet-xxx],securityGroups=[sg-xxx],assignPublicIp=ENABLED}" \
+    --overrides '{
+        "containerOverrides": [{
+            "name": "lms-app",
+            "command": ["php", "artisan", "db:seed", "--force"]
+        }]
     }'
 ```
 
-## 🐳 Faz 6: Docker ve ECS Kurulumu
+**Alternatif Yöntem:** ECS task definition'ına startup script ekleyin:
 
-### 6.1 ECS Cluster Oluştur
-```bash
-# ECS Cluster oluştur
-aws ecs create-cluster --cluster-name lms-platform-cluster
-
-# ECS Task Definition oluştur
-cat > task-definition.json << EOF
-{
-    "family": "lms-platform-task",
-    "networkMode": "awsvpc",
-    "requiresCompatibilities": ["FARGATE"],
-    "cpu": "512",
-    "memory": "1024",
-    "executionRoleArn": "arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/ecsTaskExecutionRole",
-    "containerDefinitions": [
-        {
-            "name": "lms-app",
-            "image": "your-account.dkr.ecr.us-east-1.amazonaws.com/lms-platform:latest",
-            "portMappings": [
-                {
-                    "containerPort": 80,
-                    "protocol": "tcp"
-                }
-            ],
-            "environment": [
-                {"name": "APP_ENV", "value": "production"},
-                {"name": "DB_HOST", "value": "lms-platform-db.xxxxx.us-east-1.rds.amazonaws.com"},
-                {"name": "REDIS_HOST", "value": "lms-platform-cache.xxxxx.cache.amazonaws.com"}
-            ],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "/ecs/lms-platform",
-                    "awslogs-region": "us-east-1",
-                    "awslogs-stream-prefix": "ecs"
-                }
-            }
-        }
-    ]
-}
-EOF
-
-aws ecs register-task-definition --cli-input-json file://task-definition.json
-```
-
-## 🔄 Faz 7: CI/CD Pipeline Kurulumu
-
-### 7.1 GitHub Actions Workflow
 ```yaml
-# .github/workflows/deploy.yml
-name: Deploy to AWS
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-    
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-    
-    - name: Build, tag, and push image to Amazon ECR
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: lms-platform
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-    
-    - name: Deploy to ECS
-      run: |
-        aws ecs update-service --cluster lms-platform-cluster --service lms-platform-service --force-new-deployment
+# ECS Task Definition'a ekleyin
+ContainerDefinitions:
+  - Name: lms-app
+    EntryPoint: ["/bin/sh", "-c"]
+    Command:
+      - |
+        php artisan migrate --force &&
+        php artisan db:seed --force &&
+        /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
 ```
 
-## 📊 Faz 8: Monitoring ve Logging
+## 🧪 Test ve Doğrulama
 
-### 8.1 CloudWatch Log Groups
+### 1. Health Check
 ```bash
-# Log Group oluştur
-aws logs create-log-group --log-group-name /ecs/lms-platform
+# Health endpoint'i test edin
+curl http://${ALB_URL}/health
 
-# CloudWatch Dashboard oluştur
-aws cloudwatch put-dashboard --dashboard-name "LMS-Platform-Dashboard" --dashboard-body '{
-    "widgets": [
-        {
-            "type": "metric",
-            "x": 0,
-            "y": 0,
-            "width": 12,
-            "height": 6,
-            "properties": {
-                "metrics": [
-                    [ "AWS/ECS", "CPUUtilization", "ServiceName", "lms-platform-service" ],
-                    [ "AWS/ECS", "MemoryUtilization", "ServiceName", "lms-platform-service" ]
-                ],
-                "period": 300,
-                "stat": "Average",
-                "region": "us-east-1",
-                "title": "ECS Service Metrics"
-            }
-        }
-    ]
-}'
+# Beklenen yanıt:
+# {"status":"healthy","timestamp":"...","checks":{"database":"healthy","cache":"healthy","redis":"healthy"}}
 ```
 
-## 🔒 Faz 9: SSL ve Domain Konfigürasyonu
-
-### 9.1 Route 53 Hosted Zone
+### 2. Uygulamayı Açın
 ```bash
-# Hosted Zone oluştur
-aws route53 create-hosted-zone --name yourdomain.com --caller-reference $(date +%s)
-
-# SSL Sertifikası oluştur
-aws acm request-certificate \
-    --domain-name yourdomain.com \
-    --subject-alternative-names "*.yourdomain.com" \
-    --validation-method DNS
+# Tarayıcıda açın
+echo "Uygulama URL: http://${ALB_URL}"
 ```
 
-## 💾 Faz 10: Backup ve Disaster Recovery
-
-### 10.1 RDS Automated Backups
+### 3. Log Kontrolü
 ```bash
-# RDS backup ayarları (zaten yukarıda yapıldı)
-# backup-retention-period: 7 gün
-# multi-az: true
+# CloudWatch loglarını kontrol edin
+aws logs tail /ecs/lms-platform-free --follow --region ${AWS_REGION}
 ```
 
-### 10.2 S3 Cross-Region Replication
+## 💡 Maliyet Optimizasyonu
+
+### 1. Free Tier Limitlerini İzleme
 ```bash
-# Cross-region replication için bucket oluştur
-aws s3 mb s3://lms-platform-backup-us-west-2
-
-# Replication configuration
-cat > replication-config.json << EOF
-{
-    "Role": "arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):role/replication-role",
-    "Rules": [
-        {
-            "ID": "ReplicateToWest2",
-            "Status": "Enabled",
-            "Prefix": "",
-            "Destination": {
-                "Bucket": "arn:aws:s3:::lms-platform-backup-us-west-2",
-                "StorageClass": "STANDARD_IA"
-            }
-        }
-    ]
-}
-EOF
+# AWS Cost Explorer'ı kontrol edin
+# https://console.aws.amazon.com/cost-management/home#/cost-explorer
 ```
 
-## 🚀 Deployment Script
-
-### deployment.sh
+### 2. Billing Alarm Oluşturma
 ```bash
-#!/bin/bash
+# SNS topic oluşturun
+aws sns create-topic --name lms-platform-billing-alerts
 
-echo "🚀 Starting LMS Platform AWS Deployment..."
-
-# 1. Environment variables
-export AWS_DEFAULT_REGION="us-east-1"
-export PROJECT_NAME="lms-platform"
-export DOMAIN_NAME="yourdomain.com"
-
-# 2. Deploy infrastructure
-echo "📦 Deploying infrastructure..."
-aws cloudformation deploy \
-    --template-file infrastructure.yml \
-    --stack-name $PROJECT_NAME-infrastructure \
-    --capabilities CAPABILITY_IAM
-
-# 3. Build and push Docker image
-echo "🐳 Building and pushing Docker image..."
-aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query Account --output text).dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-
-docker build -t $PROJECT_NAME .
-docker tag $PROJECT_NAME:latest $(aws sts get-caller-identity --query Account --output text).dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$PROJECT_NAME:latest
-docker push $(aws sts get-caller-identity --query Account --output text).dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$PROJECT_NAME:latest
-
-# 4. Deploy application
-echo "🚀 Deploying application..."
-aws ecs update-service --cluster $PROJECT_NAME-cluster --service $PROJECT_NAME-service --force-new-deployment
-
-echo "✅ Deployment completed!"
-echo "🌐 Application URL: https://$DOMAIN_NAME"
+# CloudWatch alarm oluşturun
+aws cloudwatch put-metric-alarm \
+    --alarm-name lms-platform-billing-alert \
+    --alarm-description "Alert when charges exceed $5" \
+    --metric-name EstimatedCharges \
+    --namespace AWS/Billing \
+    --statistic Maximum \
+    --period 86400 \
+    --threshold 5.0 \
+    --comparison-operator GreaterThanThreshold \
+    --evaluation-periods 1
 ```
 
-## 📈 Ölçeklendirme Stratejisi
-
-### Başlangıç (0-100 kullanıcı)
-- EC2: t3.medium (2 vCPU, 4GB RAM)
-- RDS: db.t3.micro (1 vCPU, 1GB RAM)
-- ElastiCache: cache.t3.micro (1 vCPU, 0.5GB RAM)
-
-### Orta Ölçek (100-1000 kullanıcı)
-- EC2: t3.large (2 vCPU, 8GB RAM) + Auto Scaling
-- RDS: db.t3.small (2 vCPU, 2GB RAM)
-- ElastiCache: cache.t3.small (1 vCPU, 1.4GB RAM)
-
-### Yüksek Ölçek (1000+ kullanıcı)
-- ECS Fargate: 2-10 tasks
-- RDS: db.r5.large (2 vCPU, 16GB RAM) + Read Replicas
-- ElastiCache: cache.r5.large (2 vCPU, 13.07GB RAM)
-
-## 💰 Maliyet Optimizasyonu
-
-### 1. Reserved Instances
-- 1 yıllık rezervasyon: %30-40 tasarruf
-- 3 yıllık rezervasyon: %50-60 tasarruf
-
-### 2. Spot Instances
-- Development ortamı için: %70-90 tasarruf
-- Non-critical workloads için
-
-### 3. S3 Lifecycle Policies
-- Eski dosyaları IA/Glacier'a taşı
-- Aylık %50-80 tasarruf
-
-### 4. CloudWatch Monitoring
-- Unused resources'ları tespit et
-- Right-sizing önerilerini uygula
-
-## 🔧 Troubleshooting
-
-### Yaygın Sorunlar
-1. **High CPU Usage**: Auto Scaling Group ayarlarını kontrol et
-2. **Database Connection Issues**: Security Group kurallarını kontrol et
-3. **Slow Response**: CloudFront cache ayarlarını optimize et
-4. **Memory Issues**: Container memory limitlerini artır
-
-### Monitoring Commands
+### 3. Kullanılmayan Kaynakları Temizleme
 ```bash
-# ECS service durumu
-aws ecs describe-services --cluster lms-platform-cluster --services lms-platform-service
-
-# RDS durumu
-aws rds describe-db-instances --db-instance-identifier lms-platform-db
-
-# CloudWatch metrics
-aws cloudwatch get-metric-statistics --namespace AWS/ECS --metric-name CPUUtilization --dimensions Name=ServiceName,Value=lms-platform-service --start-time 2024-01-01T00:00:00Z --end-time 2024-01-02T00:00:00Z --period 300 --statistics Average
+# Stack'i silmek için
+aws cloudformation delete-stack \
+    --stack-name lms-platform-free-infrastructure \
+    --region ${AWS_REGION}
 ```
 
-Bu rehber ile AWS'de production-ready bir LMS platformu kurabilirsiniz. Her adımı sırasıyla takip ederek minimum maliyetle başlayıp ihtiyaca göre ölçeklendirebilirsiniz.
+## 🔧 Sorun Giderme
 
+### Problem 1: ECS Task Başlamıyor
+```bash
+# Task loglarını kontrol edin
+aws logs tail /ecs/lms-platform-free --follow
 
+# Task durumunu kontrol edin
+aws ecs describe-tasks \
+    --cluster lms-platform-free-cluster \
+    --tasks <task-id>
+```
 
+### Problem 2: Veritabanı Bağlantı Hatası
+```bash
+# Security group kurallarını kontrol edin
+aws ec2 describe-security-groups \
+    --filters "Name=tag:Name,Values=lms-platform-free-db-sg"
 
+# RDS endpoint'i kontrol edin
+aws rds describe-db-instances \
+    --db-instance-identifier lms-platform-free-database
+```
 
+### Problem 3: Redis Bağlantı Hatası
+```bash
+# ElastiCache endpoint'i kontrol edin
+aws elasticache describe-cache-clusters \
+    --cache-cluster-id lms-platform-free-cache \
+    --show-cache-node-info
+```
+
+### Problem 4: ALB Health Check Başarısız
+```bash
+# Target group health'i kontrol edin
+aws elbv2 describe-target-health \
+    --target-group-arn <target-group-arn>
+
+# Health check endpoint'ini test edin
+curl http://<private-ip>/health
+```
+
+## 📊 Monitoring
+
+### CloudWatch Dashboard
+```bash
+# Dashboard oluşturun (AWS Console'dan)
+# https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#dashboards:
+```
+
+### Önemli Metrikler
+- ECS: CPUUtilization, MemoryUtilization
+- RDS: CPUUtilization, FreeableMemory, DatabaseConnections
+- ElastiCache: CPUUtilization, NetworkBytesIn, NetworkBytesOut
+- ALB: TargetResponseTime, HealthyHostCount
+
+## 🎉 Başarılı Kurulum Sonrası
+
+1. ✅ Uygulama çalışıyor
+2. ✅ Veritabanı bağlantısı başarılı
+3. ✅ Redis cache çalışıyor
+4. ✅ Health check başarılı
+5. ✅ Migration ve seeder çalıştırıldı
+6. ✅ S3 bucket hazır
+7. ✅ Logging aktif
+
+## 📝 Sonraki Adımlar
+
+1. **Domain Name Ekleme:** Route 53 ile domain ekleyin
+2. **SSL Certificate:** ACM ile SSL sertifikası ekleyin
+3. **CDN:** CloudFront ekleyin (Free Tier 1TB)
+4. **Backup:** RDS snapshot'ları otomatikleştirin
+5. **Monitoring:** CloudWatch alarm'ları ekleyin
+6. **Scaling:** Auto Scaling yapılandırın (Free Tier limitlerini aşmadan)
+
+## 🔐 Güvenlik Önerileri
+
+1. **Security Groups:** Sadece gerekli portları açın
+2. **IAM Roles:** Minimum yetki prensibi
+3. **Secrets Management:** AWS Secrets Manager kullanın
+4. **Encryption:** RDS ve S3'te encryption aktif edin
+5. **Backup:** Düzenli backup alın
+
+## 💰 Tahmini Maliyet (Free Tier İçinde)
+
+- **EC2/ECS Fargate:** $0 (Free Tier)
+- **RDS:** $0 (Free Tier)
+- **ElastiCache:** $0 (Free Tier)
+- **S3:** $0 (5GB'a kadar)
+- **ALB:** ~$16/ay (Free Tier'de yok)
+- **Data Transfer:** $0 (1GB'a kadar)
+- **CloudWatch:** $0 (Free Tier limitlerinde)
+
+**Toplam:** ~$16/ay (sadece ALB için)
+
+## 🆘 Yardım
+
+Sorun yaşarsanız:
+1. CloudWatch loglarını kontrol edin
+2. AWS Support'a başvurun (Free Tier hesaplar için temel destek)
+3. GitHub Issues'da sorun bildirin
+
+## 📚 Kaynaklar
+
+- [AWS Free Tier](https://aws.amazon.com/free/)
+- [AWS ECS Documentation](https://docs.aws.amazon.com/ecs/)
+- [AWS RDS Documentation](https://docs.aws.amazon.com/rds/)
+- [Laravel Documentation](https://laravel.com/docs)
+
+---
+
+**Not:** Bu rehber Free Tier limitleri dahilinde çalışmak için optimize edilmiştir. Production ortamı için ek güvenlik ve performans ayarları yapılmalıdır.

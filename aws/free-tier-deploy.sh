@@ -16,6 +16,10 @@ AWS_REGION="us-east-1"
 STACK_NAME="${PROJECT_NAME}-infrastructure"
 ECR_REPOSITORY="${PROJECT_NAME}"
 
+# Get AWS Account ID
+AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+
 # Functions
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -36,10 +40,6 @@ log_error() {
 # Check Free Tier eligibility
 check_free_tier_eligibility() {
     log_info "Checking Free Tier eligibility..."
-    
-    # Get AWS Account ID
-    AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-    ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
     
     log_info "AWS Account ID: $AWS_ACCOUNT_ID"
     
@@ -231,13 +231,6 @@ get_free_tier_info() {
         --query 'Stacks[0].Outputs[?OutputKey==`LoadBalancerURL`].OutputValue' \
         --output text)
     
-    # Get CloudFront URL
-    CLOUDFRONT_URL=$(aws cloudformation describe-stacks \
-        --stack-name ${STACK_NAME} \
-        --region ${AWS_REGION} \
-        --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontURL`].OutputValue' \
-        --output text)
-    
     # Get Database endpoint
     DB_ENDPOINT=$(aws cloudformation describe-stacks \
         --stack-name ${STACK_NAME} \
@@ -256,22 +249,20 @@ get_free_tier_info() {
     log_success "Free Tier deployment completed successfully! 🆓"
     echo ""
     echo "🆓 Free Tier Resources Deployed:"
-    echo "   ✅ EC2 t2.micro: 750 hours/month FREE"
-    echo "   ✅ RDS db.t2.micro: 750 hours/month FREE"
-    echo "   ✅ ElastiCache t2.micro: 750 hours/month FREE"
+    echo "   ✅ ECS Fargate (256 CPU, 512 MB): Minimal cost"
+    echo "   ✅ RDS db.t3.micro: 750 hours/month FREE"
+    echo "   ✅ ElastiCache cache.t3.micro: Minimal cost"
     echo "   ✅ S3: 5GB FREE"
-    echo "   ✅ CloudFront: 1TB FREE"
-    echo "   ✅ ALB: 750 hours/month FREE"
+    echo "   ⚠️  ALB: ~$16/month (Free Tier'de yok)"
     echo ""
     echo "🌐 Application URLs:"
     echo "   Load Balancer: ${ALB_URL}"
-    echo "   CloudFront: ${CLOUDFRONT_URL}"
     echo ""
     echo "🗄️ Database Information:"
     echo "   MySQL Endpoint: ${DB_ENDPOINT}"
     echo "   S3 Bucket: ${S3_BUCKET}"
     echo ""
-    echo "💰 Estimated Monthly Cost: $0-5 (Free Tier limits)"
+    echo "💰 Estimated Monthly Cost: ~$16-20 (ALB hariç Free Tier)"
     echo ""
     echo "📊 Monitoring & Management:"
     echo "   CloudFormation: https://console.aws.amazon.com/cloudformation/home?region=${AWS_REGION}#/stacks"

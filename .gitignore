@@ -9,6 +9,7 @@
 .env
 .env.backup
 .env.production
+.env.*.local
 .phpactor.json
 .phpunit.result.cache
 Homestead.json
@@ -21,3 +22,73 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# AWS & Deployment
+*.pem
+*.key
+*.p12
+*.pfx
+aws/*.pem
+aws/*.key
+docker.env
+.env.aws
+.env.production
+
+# Logs
+*.log
+logs/
+storage/logs/*
+!storage/logs/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+
+# OS files
+Thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Database
+*.sqlite
+*.sqlite3
+database/database.sqlite
+
+# Build files
+/public/build
+/public/mix-manifest.json
+/public/hot
+
+# Cache
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
+/storage/framework/cache/*
+!/storage/framework/cache/.gitkeep
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitkeep
+/storage/framework/views/*
+!/storage/framework/views/.gitkeep
+
+# Testing
+/coverage
+/.phpunit.cache
+phpunit.xml.bak
+
+# Package files
+composer.phar
+package-lock.json.bak
+
+# Stripe test files
+stripe_*.tar.gz

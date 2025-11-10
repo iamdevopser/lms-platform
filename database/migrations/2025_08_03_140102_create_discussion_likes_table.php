@@ -26,8 +26,8 @@ return new class extends Migration
             $table->index(['discussion_id', 'type']);
             $table->index(['reply_id', 'type']);
             
-            // Ensure either discussion_id or reply_id is set, but not both
-            $table->check('(discussion_id IS NOT NULL AND reply_id IS NULL) OR (discussion_id IS NULL AND reply_id IS NOT NULL)');
+            // Note: Check constraint removed for SQLite compatibility
+            // Business logic validation should be handled in the model/controller
             
             // Unique constraint to prevent duplicate likes
             $table->unique(['user_id', 'discussion_id', 'type'], 'unique_discussion_like');
