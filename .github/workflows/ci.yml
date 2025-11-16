@@ -33,8 +33,29 @@ jobs:
           extensions: pdo_sqlite, sqlite3, redis, mbstring, xml, curl, zip
           coverage: none
 
-      - name: Copy .env
-        run: cp .env.example .env
+      - name: Create .env file
+        run: |
+          cat > .env << 'EOF'
+          APP_NAME="OnliNote LMS"
+          APP_ENV=testing
+          APP_KEY=
+          APP_DEBUG=true
+          APP_URL=http://localhost
+          
+          DB_CONNECTION=sqlite
+          DB_DATABASE=database/database.sqlite
+          
+          REDIS_HOST=localhost
+          REDIS_PASSWORD=
+          REDIS_PORT=6379
+          
+          CACHE_DRIVER=redis
+          SESSION_DRIVER=redis
+          QUEUE_CONNECTION=redis
+          
+          LOG_CHANNEL=stack
+          LOG_LEVEL=debug
+          EOF
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -50,6 +71,9 @@ jobs:
 
       - name: Run migrations
         run: php artisan migrate --force
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
 
       - name: Run tests
         run: php artisan test
@@ -68,6 +92,12 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Install docker-compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
 
       - name: Validate docker-compose
         run: |
