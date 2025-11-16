@@ -5,6 +5,7 @@ on:
     branches: [ main, minimal-sqlite ]
   pull_request:
     branches: [ main, minimal-sqlite ]
+  workflow_dispatch:  # Manuel çalıştırma için
 
 jobs:
   test:
