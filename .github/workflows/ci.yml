@@ -83,7 +83,7 @@ jobs:
 
       - name: Create Vite manifest for tests
         run: |
-          mkdir -p public/build
+          mkdir -p public/build/assets
           cat > public/build/manifest.json << 'EOF'
           {
             "resources/css/app.css": {
