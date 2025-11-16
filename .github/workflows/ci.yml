@@ -30,10 +30,10 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: pdo_sqlite, sqlite3, redis, mbstring, xml, curl, zip
+          extensions: pdo, pdo_sqlite, sqlite3, mbstring, xml, ctype, json, tokenizer, redis
           coverage: none
 
-      - name: Create .env file
+      - name: Copy .env file
         run: |
           cat > .env << 'EOF'
           APP_NAME="OnliNote LMS"
@@ -59,9 +59,6 @@ jobs:
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Generate app key
-        run: php artisan key:generate
 
       - name: Create SQLite database
         run: |
@@ -108,7 +105,6 @@ jobs:
           DB_DATABASE: database/database.sqlite
           REDIS_HOST: localhost
           REDIS_PORT: 6379
-          APP_ENV: testing
 
   docker-build:
     runs-on: ubuntu-latest
@@ -131,9 +127,10 @@ jobs:
           docker-compose -f docker-compose.free-tier.yml config
 
       - name: Test docker-compose up
+        timeout-minutes: 10
         run: |
-          docker-compose -f docker-compose.free-tier.yml up -d
-          sleep 10
+          docker-compose -f docker-compose.free-tier.yml up -d redis
+          sleep 5
           docker-compose -f docker-compose.free-tier.yml ps
           docker-compose -f docker-compose.free-tier.yml down -v
 
