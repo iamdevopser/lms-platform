@@ -34,6 +34,7 @@ class ProfileTest extends TestCase
 
         $response
             ->assertSessionHasNoErrors()
+            ->assertSessionHas('success')
             ->assertRedirect('/user/profile');
 
         $user->refresh();
@@ -56,6 +57,7 @@ class ProfileTest extends TestCase
 
         $response
             ->assertSessionHasNoErrors()
+            ->assertSessionHas('success')
             ->assertRedirect('/user/profile');
 
         $this->assertNotNull($user->refresh()->email_verified_at);
