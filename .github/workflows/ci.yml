@@ -75,6 +75,32 @@ jobs:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
 
+      - name: Run seeders
+        run: php artisan db:seed --force
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+
+      - name: Create Vite manifest for tests
+        run: |
+          mkdir -p public/build
+          cat > public/build/manifest.json << 'EOF'
+          {
+            "resources/css/app.css": {
+              "file": "assets/app.css",
+              "src": "resources/css/app.css",
+              "isEntry": true
+            },
+            "resources/js/app.js": {
+              "file": "assets/app.js",
+              "src": "resources/js/app.js",
+              "isEntry": true
+            }
+          }
+          EOF
+          touch public/build/assets/app.css
+          touch public/build/assets/app.js
+
       - name: Run tests
         run: php artisan test
         env:
@@ -82,6 +108,7 @@ jobs:
           DB_DATABASE: database/database.sqlite
           REDIS_HOST: localhost
           REDIS_PORT: 6379
+          APP_ENV: testing
 
   docker-build:
     runs-on: ubuntu-latest
