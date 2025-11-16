@@ -27,6 +27,7 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
+            ->from('/user/profile')
             ->post('/user/profile/store', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
@@ -50,6 +51,7 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
+            ->from('/user/profile')
             ->post('/user/profile/store', [
                 'name' => 'Test User',
                 'email' => $user->email,
