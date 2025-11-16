@@ -1,0 +1,85 @@
+{
+    "name": "OnlyNote - Learning Management System",
+    "short_name": "OnlyNote",
+    "description": "Modern Learning Management System by OnlyNote",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#667eea",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "lang": "tr",
+    "categories": ["education", "productivity"],
+    "icons": [
+        {
+            "src": "/frontend/images/favicon.svg",
+            "sizes": "32x32",
+            "type": "image/svg+xml",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "/frontend/images/onlynote-logo.svg",
+            "sizes": "192x192",
+            "type": "image/svg+xml",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "/frontend/images/onlynote-logo.svg",
+            "sizes": "512x512",
+            "type": "image/svg+xml",
+            "purpose": "maskable any"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Dashboard",
+            "short_name": "Dashboard",
+            "description": "Ana dashboard sayfası",
+            "url": "/dashboard",
+            "icons": [
+                {
+                    "src": "/frontend/images/onlynote-logo.svg",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Kurslar",
+            "short_name": "Kurslar",
+            "description": "Kurs listesi",
+            "url": "/courses",
+            "icons": [
+                {
+                    "src": "/frontend/images/onlynote-logo.svg",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Profil",
+            "short_name": "Profil",
+            "description": "Kullanıcı profili",
+            "url": "/profile",
+            "icons": [
+                {
+                    "src": "/frontend/images/onlynote-logo.svg",
+                    "sizes": "96x96"
+                }
+            ]
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "/images/screenshot-wide.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide"
+        },
+        {
+            "src": "/images/screenshot-narrow.png",
+            "sizes": "750x1334",
+            "type": "image/png",
+            "form_factor": "narrow"
+        }
+    ]
+} 

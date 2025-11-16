@@ -1,3 +1,4 @@
+git push origin main
 <div class="card card-item">
     <div class="card-body">
         <h3 class="card-title fs-18 pb-2">Course Categories</h3>

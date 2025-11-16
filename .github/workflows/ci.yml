@@ -60,6 +60,9 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
+      - name: Generate app key
+        run: php artisan key:generate
+
       - name: Create SQLite database
         run: |
           mkdir -p database
