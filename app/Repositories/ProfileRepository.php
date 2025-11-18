@@ -26,6 +26,12 @@ class ProfileRepository
             $data['photo'] = $this->uploadFile($photo, 'user', $profile->photo);
         }
 
+        $emailChanged = array_key_exists('email', $data) && $data['email'] !== $profile->email;
+
+        if ($emailChanged) {
+            $data['email_verified_at'] = null;
+        }
+
         // Manually assign other fields from $data
         $profile->update($data);
 

@@ -92,3 +92,4 @@ package-lock.json.bak
 
 # Stripe test files
 stripe_*.tar.gz
+lms-platform/
