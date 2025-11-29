@@ -51,14 +51,20 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-script
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install Node dependencies (production only)
-RUN npm ci --only=production --no-audit --no-fund --silent
+# Install Node dependencies (including dev dependencies for build)
+RUN npm ci --no-audit --no-fund --silent
+
+# Verify vite is installed and show node_modules structure
+RUN npm list vite && ls -la node_modules/.bin/ | grep vite || echo "Vite not found in node_modules/.bin"
 
 # Copy application code
 COPY . .
 
-# Build frontend assets
-RUN npm run build
+# Build frontend assets - use full path to vite to ensure it's found
+RUN ./node_modules/.bin/vite build || npx vite build || npm run build
+
+# Remove dev dependencies after build to save space (optional but recommended for Free Tier)
+RUN npm prune --production --no-audit --no-fund --silent
 
 # Free Tier optimizations
 RUN echo "upload_max_filesize = 10M" >> /usr/local/etc/php/conf.d/uploads.ini \
